@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureLog Analyzer - Dashboard Avanzado</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        :root {
+            --primary: #2a9d8f;
+            --secondary: #264653;
+            --accent: #e9c46a;
+            --danger: #e76f51;
+            --dark: #1a1d24;
+            --dark-light: #2a2e3a;
+            --light: #f4f4f4;
+            --text: #e6e6e6;
+            --text-muted: #a0a0a0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(to right, var(--secondary), var(--dark-light));
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo i {
+            font-size: 28px;
+            color: var(--primary);
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+        }
+        
+        nav a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        
+        nav a:hover, nav a.active {
+            color: var(--primary);
+            background-color: rgba(42, 157, 143, 0.1);
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .sidebar {
+            background-color: var(--dark-light);
+            border-radius: 10px;
+            padding: 20px;
+            height: fit-content;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 25px;
+        }
+        
+        .sidebar-section h3 {
+            color: var(--accent);
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .filter-option {
+            margin-bottom: 10px;
+        }
+        
+        .filter-option label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .filter-option select, .filter-option input {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: var(--dark);
+            color: var(--text);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            background-color: var(--accent);
+            color: var(--dark);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background-color: #d45a3c;
+            color: white;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-rows: auto auto 1fr;
+            gap: 20px;
+        }
+        
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat-card {
+            background-color: var(--dark-light);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .chart-card {
+            background-color: var(--dark-light);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .chart-title {
+            font-size: 1.2rem;
+            color: var(--accent);
+        }
+        
+        .chart-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chart-action-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .chart-action-btn:hover {
+            color: var(--primary);
+        }
+        
+        .log-container {
+            margin-top: 20px;
+            background-color: var(--dark-light);
+            border-radius: 10px;
+            padding: 20px;
+            overflow: auto;
+            max-height: 400px;
+        }
+        
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .log-entry {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-family: monospace;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .log-icon {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .critical {
+            color: var(--danger);
+            font-weight: bold;
+        }
+        
+        .warning {
+            color: var(--accent);
+        }
+        
+        .normal {
+            color: var(--primary);
+        }
+        
+        .upload-container {
+            background-color: var(--dark-light);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--primary);
+            border-radius: 8px;
+            padding: 30px;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            background-color: rgba(42, 157, 143, 0.1);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .simulation-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .threat-indicators {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .threat-card {
+            background-color: var(--dark-light);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .threat-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .threat-critical .threat-icon {
+            background-color: rgba(231, 111, 81, 0.2);
+            color: var(--danger);
+        }
+        
+        .threat-warning .threat-icon {
+            background-color: rgba(233, 196, 106, 0.2);
+            color: var(--accent);
+        }
+        
+        .threat-info .threat-icon {
+            background-color: rgba(42, 157, 143, 0.2);
+            color: var(--primary);
+        }
+        
+        .threat-content h4 {
+            margin-bottom: 5px;
+        }
+        
+        .threat-content p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: var(--dark-light);
+            border-radius: 10px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .modal-close:hover {
+            color: var(--danger);
+        }
+        
+        .analysis-result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: rgba(42, 157, 143, 0.1);
+        }
+        
+        .analysis-result h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .pattern-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+        
+        .pattern-list li {
+            padding: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+        }
+        
+        .pattern-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .pattern-list i {
+            margin-right: 10px;
+            color: var(--accent);
+        }
+        
+        @media (max-width: 1100px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                order: 2;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            nav ul {
+                gap: 10px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .threat-indicators {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <h1>SecureLog Analyzer</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="active">Dashboard</a></li>
+                    <li><a href="#">Logs</a></li>
+                    <li><a href="#">Alertas</a></li>
+                    <li><a href="#">Informes</a></li>
+                    <li><a href="#">Configuración</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="dashboard">
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <h3>Filtros</h3>
+                    <div class="filter-option">
+                        <label for="date-range">Rango de fechas</label>
+                        <select id="date-range">
+                            <option value="today">Hoy</option>
+                            <option value="yesterday">Ayer</option>
+                            <option value="week">Esta semana</option>
+                            <option value="month">Este mes</option>
+                            <option value="custom">Personalizado</option>
+                        </select>
+                    </div>
+                    <div class="filter-option">
+                        <label for="log-type">Tipo de log</label>
+                        <select id="log-type">
+                            <option value="all">Todos</option>
+                            <option value="firewall">Firewall</option>
+                            <option value="auth">Autenticación</option>
+                            <option value="network">Red</option>
+                            <option value="system">Sistema</option>
+                        </select>
+                    </div>
+                    <div class="filter-option">
+                        <label for="severity">Nivel de severidad</label>
+                        <select id="severity">
+                            <option value="all">Todos</option>
+                            <option value="critical">Crítico</option>
+                            <option value="warning">Advertencia</option>
+                            <option value="info">Informativo</option>
+                        </select>
+                    </div>
+                    <div class="filter-option">
+                        <label for="ip-filter">Filtrar por IP</label>
+                        <input type="text" id="ip-filter" placeholder="Ej: 192.168.1.1">
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3>Acciones</h3>
+                    <button class="btn btn-block" onclick="applyFilters()">Aplicar Filtros</button>
+                    <button class="btn btn-outline btn-block" onclick="exportLogs()">Exportar a CSV</button>
+                    <button class="btn btn-outline btn-block" onclick="generateReport()">Generar Informe</button>
+                    <button class="btn btn-block" onclick="showAdvancedAnalysis()">Análisis Avanzado</button>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3>Simulación</h3>
+                    <p>Generar logs de prueba para analizar</p>
+                    <div class="simulation-controls">
+                        <button class="btn" onclick="startSimulation()">Iniciar</button>
+                        <button class="btn btn-outline" onclick="stopSimulation()">Detener</button>
+                        <button class="btn btn-danger" onclick="simulateAttack()">Simular Ataque</button>
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3>Detectores de Amenazas</h3>
+                    <div class="switch-container">
+                        <label class="switch">
+                            <input type="checkbox" id="ddos-detector" checked>
+                            <span class="slider round"></span>
+                        </label>
+                        <label for="ddos-detector">Detección de DDoS</label>
+                    </div>
+                    <div class="switch-container">
+                        <label class="switch">
+                            <input type="checkbox" id="brute-force-detector" checked>
+                            <span class="slider round"></span>
+                        </label>
+                        <label for="brute-force-detector">Detección de Fuerza Bruta</label>
+                    </div>
+                    <div class="switch-container">
+                        <label class="switch">
+                            <input type="checkbox" id="malware-detector" checked>
+                            <span class="slider round"></span>
+                        </label>
+                        <label for="malware-detector">Detección de Malware</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="main-content">
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-logs">0</div>
+                        <div class="stat-label">Total de Logs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="critical-logs">0</div>
+                        <div class="stat-label">Eventos Críticos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="warning-logs">0</div>
+                        <div class="stat-label">Advertencias</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="unique-ips">0</div>
+                        <div class="stat-label">IPs Únicas</div>
+                    </div>
+                </div>
+                
+                <div class="threat-indicators">
+                    <div class="threat-card threat-critical">
+                        <div class="threat-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="threat-content">
+                            <h4>5 Amenazas Críticas</h4>
+                            <p>Revisión inmediata requerida</p>
+                        </div>
+                    </div>
+                    
+                    <div class="threat-card threat-warning">
+                        <div class="threat-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="threat-content">
+                            <h4>12 Intentos de Fuerza Bruta</h4>
+                            <p>Desde 3 IPs diferentes</p>
+                        </div>
+                    </div>
+                    
+                    <div class="threat-card threat-info">
+                        <div class="threat-icon">
+                            <i class="fas fa-network-wired"></i>
+                        </div>
+                        <div class="threat-content">
+                            <h4>28K Eventos de Red</h4>
+                            <p>En la última hora</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Distribución de Eventos</h3>
+                            <div class="chart-actions">
+                                <button class="chart-action-btn" onclick="refreshChart('eventsChart')"><i class="fas fa-sync-alt"></i></button>
+                                <button class="chart-action-btn" onclick="expandChart('eventsChart')"><i class="fas fa-expand"></i></button>
+                            </div>
+                        </div>
+                        <canvas id="eventsChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Tendencia Temporal</h3>
+                            <div class="chart-actions">
+                                <button class="chart-action-btn" onclick="refreshChart('timelineChart')"><i class="fas fa-sync-alt"></i></button>
+                                <button class="chart-action-btn" onclick="expandChart('timelineChart')"><i class="fas fa-expand"></i></button>
+                            </div>
+                        </div>
+                        <canvas id="timelineChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Top IPs Peligrosas</h3>
+                            <div class="chart-actions">
+                                <button class="chart-action-btn" onclick="refreshChart('ipChart')"><i class="fas fa-sync-alt"></i></button>
+                                <button class="chart-action-btn" onclick="expandChart('ipChart')"><i class="fas fa-expand"></i></button>
+                            </div>
+                        </div>
+                        <canvas id="ipChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Patrones de Ataque</h3>
+                            <div class="chart-actions">
+                                <button class="chart-action-btn" onclick="refreshChart('attackChart')"><i class="fas fa-sync-alt"></i></button>
+                                <button class="chart-action-btn" onclick="expandChart('attackChart')"><i class="fas fa-expand"></i></button>
+                            </div>
+                        </div>
+                        <canvas id="attackChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="log-container">
+                    <div class="log-header">
+                        <h3>Logs en Tiempo Real</h3>
+                        <div>
+                            <button class="btn btn-outline" onclick="clearLogs()">Limpiar</button>
+                            <button class="btn" onclick="toggleAutoScroll()">Auto Scroll <span id="auto-scroll-indicator">✓</span></button>
+                        </div>
+                    </div>
+                    <div id="log-entries">
+                        <div class="log-entry">
+                            <div class="log-icon"><i class="fas fa-info-circle normal"></i></div>
+                            <span class="normal">[INFO] Sistema iniciado. Cargando módulos de análisis...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="upload-container">
+                    <h3>Cargar Logs de Seguridad</h3>
+                    <p>Arrastra archivos de log o haz clic para seleccionar</p>
+                    <div class="upload-area" onclick="document.getElementById('file-input').click()">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <p>Formato soportado: .log, .txt, .csv</p>
+                        <p>Tamaño máximo: 10MB</p>
+                    </div>
+                    <input type="file" id="file-input" accept=".log,.txt,.csv" style="display: none;" onchange="handleFileUpload(this.files)">
+                    <button class="btn" onclick="document.getElementById('file-input').click()">Seleccionar Archivos</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="analysis-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Análisis Avanzado de Logs</h3>
+                <button class="modal-close" onclick="closeModal('analysis-modal')">&times;</button>
+            </div>
+            <div class="filter-option">
+                <label for="analysis-type">Tipo de Análisis</label>
+                <select id="analysis-type">
+                    <option value="pattern">Detección de Patrones</option>
+                    <option value="correlation">Correlación de Eventos</option>
+                    <option value="timeline">Análisis de Línea de Tiempo</option>
+                    <option value="threat">Evaluación de Amenazas</option>
+                </select>
+            </div>
+            <div class="filter-option">
+                <label for="time-window">Ventana de Tiempo</label>
+                <select id="time-window">
+                    <option value="1">Última hora</option>
+                    <option value="6">Últimas 6 horas</option>
+                    <option value="24">Últimas 24 horas</option>
+                    <option value="168">Última semana</option>
+                </select>
+            </div>
+            <button class="btn btn-block" onclick="runAdvancedAnalysis()">Ejecutar Análisis</button>
+            
+            <div class="analysis-result" id="analysis-result" style="display: none;">
+                <h4>Resultados del Análisis</h4>
+                <div id="analysis-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let logs = [];
+        let simulationInterval;
+        let eventsChart, timelineChart, ipChart, attackChart;
+        let autoScroll = true;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            loadSampleData();
+            updateThreatIndicators();
+        });
+        
+        function initCharts() {
+            const eventsCtx = document.getElementById('eventsChart').getContext('2d');
+            eventsChart = new Chart(eventsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Crítico', 'Advertencia', 'Informativo'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: [
+                            '#e76f51',
+                            '#e9c46a',
+                            '#2a9d8f'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#e6e6e6'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+            timelineChart = new Chart(timelineCtx, {
+                type: 'line',
+                data: {
+                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+                    datasets: [{
+                        label: 'Eventos por hora',
+                        data: [0, 0, 0, 0, 0, 0],
+                        borderColor: '#2a9d8f',
+                        tension: 0.3,
+                        fill: true,
+                        backgroundColor: 'rgba(42, 157, 143, 0.1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e6e6e6'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#e6e6e6'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#e6e6e6'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            const ipCtx = document.getElementById('ipChart').getContext('2d');
+            ipChart = new Chart(ipCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['192.168.1.15', '10.0.0.23', '45.33.21.78', '203.0.113.5'],
+                    datasets: [{
+                        label: 'Eventos por IP',
+                        data: [0, 0, 0, 0],
+                        backgroundColor: '#e76f51',
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#e6e6e6'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#e6e6e6'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            const attackCtx = document.getElementById('attackChart').getContext('2d');
+            attackChart = new Chart(attackCtx, {
+                type: 'polarArea',
+                data: {
+                    labels: ['DDoS', 'Fuerza Bruta', 'Malware', 'Scanning'],
+                    datasets: [{
+                        data: [0, 0, 0, 0],
+                        backgroundColor: [
+                            '#e76f51',
+                            '#e9c46a',
+                            '#2a9d8f',
+                            '#264653'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#e6e6e6'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function loadSampleData() {
+            addLog("Intento de acceso no autorizado desde 192.168.1.15", "critical", "firewall");
+            addLog("Firewall bloqueó conexión entrante en puerto 22", "warning", "firewall");
+            addLog("Usuario admin inició sesión correctamente", "normal", "auth");
+            addLog("Escaneo de puertos detectado desde 10.0.0.23", "critical", "network");
+            addLog("Actualización de sistema completada", "normal", "system");
+            addLog("Múltiples intentos de login fallidos para usuario root", "critical", "auth");
+            addLog("Tráfico inusual detectado en puerto 443", "warning", "network");
+            addLog("Backup de configuración realizado", "normal", "system");
+            addLog("Intento de conexión desde IP en lista negra: 45.33.21.78", "critical", "firewall");
+            addLog("Servicio SSH reiniciado", "normal", "system");
+            
+            updateStats();
+            updateThreatIndicators();
+        }
+        
+        function applyFilters() {
+            const logType = document.getElementById('log-type').value;
+            const severity = document.getElementById('severity').value;
+            const ipFilter = document.getElementById('ip-filter').value;
+            
+            addLog(`Filtros aplicados: Tipo=${logType}, Severidad=${severity}, IP=${ipFilter || 'todas'}`, "normal", "system");
+        }
+        
+        function exportLogs() {
+            addLog("Exportando logs a formato CSV...", "normal", "system");
+            setTimeout(() => {
+                addLog("Exportación completada. Descarga iniciada.", "normal", "system");
+                
+                const data = "data:text/csv;charset=utf-8," + logs.map(log => 
+                    `"${log.timestamp.toISOString()}","${log.type}","${log.logType}","${log.message}"`
+                ).join("\n");
+                
+                const encodedUri = encodeURI(data);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "securelog_export.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }, 1500);
+        }
+        
+        function generateReport() {
+            addLog("Generando informe de seguridad...", "normal", "system");
+            setTimeout(() => {
+                addLog("Informe generado. Redirigiendo a la vista de informes.", "normal", "system");
+                
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                doc.setFontSize(22);
+                doc.text("Informe de Seguridad - SecureLog Analyzer", 15, 15);
+                
+                doc.setFontSize(16);
+                doc.text("Resumen de Actividad", 15, 30);
+                
+                doc.setFontSize(12);
+                doc.text(`Fecha de generación: ${new Date().toLocaleString()}`, 15, 40);
+                doc.text(`Total de eventos: ${logs.length}`, 15, 50);
+                doc.text(`Eventos críticos: ${logs.filter(log => log.type === 'critical').length}`, 15, 60);
+                doc.text(`Eventos de advertencia: ${logs.filter(log => log.type === 'warning').length}`, 15, 70);
+                
+                doc.save("informe_seguridad.pdf");
+            }, 2000);
+        }
+        
+        function showAdvancedAnalysis() {
+            document.getElementById('analysis-modal').style.display = 'flex';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        function runAdvancedAnalysis() {
+            const analysisType = document.getElementById('analysis-type').value;
+            const timeWindow = document.getElementById('time-window').value;
+            
+            addLog(`Ejecutando análisis: ${analysisType} (ventana: ${timeWindow}h)`, "normal", "system");
+            
+            setTimeout(() => {
+                document.getElementById('analysis-result').style.display = 'block';
+                
+                let analysisContent = '';
+                if (analysisType === 'pattern') {
+                    analysisContent = `
+                        <p>Se detectaron 5 patrones de comportamiento sospechoso:</p>
+                        <ul class="pattern-list">
+                            <li><i class="fas fa-fingerprint"></i> 12 intentos de login fallidos desde la misma IP</li>
+                            <li><i class="fas fa-fingerprint"></i> Escaneo de puertos en intervalo corto de tiempo</li>
+                            <li><i class="fas fa-fingerprint"></i> Múltiples peticiones a API desde user-agent anómalo</li>
+                            <li><i class="fas fa-fingerprint"></i> Patrón de tráfico similar a ataque DDoS</li>
+                            <li><i class="fas fa-fingerprint"></i> Acceso a recursos sensibles en horario inusual</li>
+                        </ul>
+                    `;
+                } else if (analysisType === 'correlation') {
+                    analysisContent = `
+                        <p>Se encontraron 3 correlaciones significativas:</p>
+                        <ul class="pattern-list">
+                            <li><i class="fas fa-link"></i> Intentos de fuerza bruta seguidos de acceso exitoso desde la misma IP</li>
+                            <li><i class="fas fa-link"></i> Múltiples escaneos de puertos preceden intento de explotación</li>
+                            <li><i class="fas fa-link"></i> Patrón de tráfico inusual correlacionado con alerta de malware</li>
+                        </ul>
+                    `;
+                } else {
+                    analysisContent = `
+                        <p>Análisis completado con éxito. Se procesaron ${logs.length} eventos.</p>
+                        <p>Se identificaron ${logs.filter(log => log.type === 'critical').length} eventos críticos que requieren atención inmediata.</p>
+                    `;
+                }
+                
+                document.getElementById('analysis-content').innerHTML = analysisContent;
+            }, 2000);
+        }
+        
+        function handleFileUpload(files) {
+            if (files.length > 0) {
+                const file = files[0];
+                addLog(`Cargando archivo: ${file.name}`, "normal", "system");
+                
+                setTimeout(() => {
+                    addLog("Archivo procesado. Analizando contenido...", "normal", "system");
+                    addLog("15 eventos críticos detectados en los logs cargados", "critical", "file");
+                    addLog("32 eventos de advertencia identificados", "warning", "file");
+                    addLog("Análisis completado. Actualizando dashboard...", "normal", "system");
+                    
+                    setTimeout(() => {
+                        for (let i = 0; i < 8; i++) {
+                            const types = ["critical", "warning", "normal"];
+                            const logTypes = ["firewall", "auth", "network", "system"];
+                            const messages = [
+                                "Intento de acceso SSH fallido",
+                                "Patrón de tráfico inusual detectado",
+                                "Dispositivo desconocido en la red",
+                                "Actualización de firmware disponible",
+                                "Conexión VPN establecida",
+                                "Intento de modificación de registro del sistema",
+                                "Alerta de integridad de archivo",
+                                "Cambio de configuración de seguridad"
+                            ];
+                            
+                            const type = types[Math.floor(Math.random() * types.length)];
+                            const logType = logTypes[Math.floor(Math.random() * logTypes.length)];
+                            const message = messages[Math.floor(Math.random() * messages.length)];
+                            
+                            addLog(message, type, logType);
+                        }
+                    }, 1000);
+                }, 2000);
+            }
+        }
+        
+        function startSimulation() {
+            addLog("Iniciando simulación de logs...", "normal", "system");
+            simulationInterval = setInterval(() => {
+                const types = ["critical", "warning", "normal"];
+                const logTypes = ["firewall", "auth", "network", "system"];
+                const messages = [
+                    "Intento de fuerza bruta detectado",
+                    "Cambio de configuración en el firewall",
+                    "Dispositivo no autorizado conectado a la red",
+                    "Análisis de vulnerabilidad programado",
+                    "Conexión TLS establecida",
+                    "Paquete malformado descartado",
+                    "Usuario agregado al grupo de administradores",
+                    "Respaldo de configuración completado",
+                    "Intento de acceso a recurso restringido",
+                    "Sistema de detección de intrusos actualizado"
+                ];
+                
+                const type = types[Math.floor(Math.random() * types.length)];
+                const logType = logTypes[Math.floor(Math.random() * logTypes.length)];
+                const message = messages[Math.floor(Math.random() * messages.length)];
+                
+                addLog(message, type, logType);
+            }, 2500);
+        }
+        
+        function simulateAttack() {
+            addLog("Iniciando simulación de ataque...", "critical", "system");
+            
+            const attackTypes = [
+                {name: "DDoS", log: "Ataque DDoS detectado desde múltiples IPs", type: "critical"},
+                {name: "Fuerza Bruta", log: "Múltiples intentos de login fallidos para usuario admin", type: "critical"},
+                {name: "Scanning", log: "Escaneo agresivo de puertos detectado", type: "warning"},
+                {name: "Malware", log: "Posible actividad de malware detectada en el sistema", type: "critical"}
+            ];
+            
+            let delay = 0;
+            attackTypes.forEach(attack => {
+                setTimeout(() => {
+                    addLog(attack.log, attack.type, "network");
+                    
+                    const attackIndex = attackChart.data.labels.indexOf(attack.name);
+                    if (attackIndex !== -1) {
+                        attackChart.data.datasets[0].data[attackIndex] += 1;
+                        attackChart.update();
+                    }
+                }, delay);
+                
+                delay += 1500;
+            });
+        }
+        
+        function stopSimulation() {
+            if (simulationInterval) {
+                clearInterval(simulationInterval);
+                addLog("Simulación detenida", "normal", "system");
+            }
+        }
+        
+        function addLog(message, type, logType) {
+            const logEntries = document.getElementById('log-entries');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            let className = '';
+            let icon = 'info-circle';
+            
+            switch(type) {
+                case 'critical':
+                    className = 'critical';
+                    icon = 'exclamation-circle';
+                    break;
+                case 'warning':
+                    className = 'warning';
+                    icon = 'exclamation-triangle';
+                    break;
+                default:
+                    className = 'normal';
+                    icon = 'info-circle';
+            }
+            
+            logEntry.innerHTML = `
+                <div class="log-icon"><i class="fas fa-${icon} ${className}"></i></div>
+                <span class="${className}">[${timestamp}] [${logType.toUpperCase()}] ${message}</span>
+            `;
+            
+            logEntries.insertBefore(logEntry, logEntries.firstChild);
+            
+            if (logEntries.children.length > 100) {
+                logEntries.removeChild(logEntries.lastChild);
+            }
+            
+            if (autoScroll) {
+                logEntries.scrollTop = 0;
+            }
+            
+            logs.push({
+                message,
+                type,
+                logType,
+                timestamp: new Date()
+            });
+            
+            updateStats();
+            updateThreatIndicators();
+        }
+        
+        function updateStats() {
+            const total = logs.length;
+            const critical = logs.filter(log => log.type === 'critical').length;
+            const warning = logs.filter(log => log.type === 'warning').length;
+            
+            const uniqueIps = Math.floor(total / 3);
+            
+            document.getElementById('total-logs').textContent = total;
+            document.getElementById('critical-logs').textContent = critical;
+            document.getElementById('warning-logs').textContent = warning;
+            document.getElementById('unique-ips').textContent = uniqueIps;
+            
+            eventsChart.data.datasets[0].data = [critical, warning, total - critical - warning];
+            eventsChart.update();
+            
+            timelineChart.data.datasets[0].data = [
+                Math.floor(Math.random() * 20),
+                Math.floor(Math.random() * 30),
+                Math.floor(Math.random() * 25),
+                Math.floor(Math.random() * 35),
+                Math.floor(Math.random() * 40),
+                Math.floor(Math.random() * 30)
+            ];
+            timelineChart.update();
+            
+            ipChart.data.datasets[0].data = [
+                Math.floor(Math.random() * 15) + 5,
+                Math.floor(Math.random() * 10) + 3,
+                Math.floor(Math.random() * 8) + 2,
+                Math.floor(Math.random() * 5) + 1
+            ];
+            ipChart.update();
+        }
+        
+        function updateThreatIndicators() {
+            const criticalCount = logs.filter(log => log.type === 'critical').length;
+            const warningCount = logs.filter(log => log.type === 'warning').length;
+            
+            document.querySelector('.threat-critical h4').textContent = `${criticalCount} Amenazas Críticas`;
+            document.querySelector('.threat-warning h4').textContent = `${warningCount} Intentos de Fuerza Bruta`;
+            document.querySelector('.threat-info h4').textContent = `${logs.filter(log => log.logType === 'network').length}K Eventos de Red`;
+        }
+        
+        function clearLogs() {
+            const logEntries = document.getElementById('log-entries');
+            logEntries.innerHTML = '';
+            logs = [];
+            updateStats();
+            updateThreatIndicators();
+            addLog("Logs limpiados", "normal", "system");
+        }
+        
+        function toggleAutoScroll() {
+            autoScroll = !autoScroll;
+            document.getElementById('auto-scroll-indicator').textContent = autoScroll ? '✓' : '✗';
+            addLog(`Auto-scroll ${autoScroll ? 'activado' : 'desactivado'}`, "normal", "system");
+        }
+        
+        function refreshChart(chartId) {
+            addLog(`Refrescando gráfico: ${chartId}`, "normal", "system");
+        }
+        
+        function expandChart(chartId) {
+            addLog(`Expandiendo gráfico: ${chartId}`, "normal", "system");
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</body>
+</html>

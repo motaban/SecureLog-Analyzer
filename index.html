@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureLog Analyzer - Dashboard de Análisis de Logs de Seguridad</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2a9d8f;
+            --secondary: #264653;
+            --accent: #e9c46a;
+            --danger: #e76f51;
+            --dark: #1a1d24;
+            --dark-light: #2a2e3a;
+            --light: #f4f4f4;
+            --text: #e6e6e6;
+            --text-muted: #a0a0a0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(to right, var(--secondary), var(--dark-light));
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo i {
+            font-size: 28px;
+            color: var(--primary);
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+        }
+        
+        nav a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        
+        nav a:hover {
+            color: var(--primary);
+            background-color: rgba(42, 157, 143, 0.1);
+        }
+        
+        .hero {
+            padding: 60px 0;
+            text-align: center;
+            background: linear-gradient(rgba(38, 70, 83, 0.9), rgba(38, 70, 83, 0.9)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23264653"/><path d="M0 0L100 100" stroke="%232a9d8f" stroke-width="1"/><path d="M100 0L0 100" stroke="%232a9d8f" stroke-width="1"/></svg>');
+            background-size: cover;
+        }
+        
+        .hero h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto 30px;
+            color: var(--text);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background-color: var(--accent);
+            color: var(--dark);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        section {
+            padding: 60px 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 40px;
+            color: var(--accent);
+            font-size: 2rem;
+        }
+        
+        .features {
+            background-color: var(--dark-light);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .feature-card {
+            background-color: var(--dark);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--accent);
+        }
+        
+        .tech-stack {
+            background-color: var(--dark);
+        }
+        
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .tech-item {
+            background-color: var(--dark-light);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .tech-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .tech-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        
+        .security {
+            background-color: var(--dark-light);
+        }
+        
+        .security-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .security-image {
+            background-color: var(--dark);
+            border-radius: 10px;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .security-image i {
+            font-size: 8rem;
+            color: var(--primary);
+            opacity: 0.7;
+        }
+        
+        .security-list {
+            list-style: none;
+        }
+        
+        .security-list li {
+            margin-bottom: 15px;
+            padding-left: 30px;
+            position: relative;
+        }
+        
+        .security-list li i {
+            position: absolute;
+            left: 0;
+            top: 3px;
+            color: var(--accent);
+        }
+        
+        .metrics {
+            background-color: var(--dark);
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .metric-card {
+            background-color: var(--dark-light);
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .metric-label {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+        
+        .demo {
+            background-color: var(--dark-light);
+            text-align: center;
+        }
+        
+        .demo-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .dashboard-preview {
+            background-color: var(--dark);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 30px 0;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        
+        .dashboard-header {
+            background-color: var(--secondary);
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .dashboard-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .dashboard-dot.red {
+            background-color: var(--danger);
+        }
+        
+        .dashboard-dot.yellow {
+            background-color: var(--accent);
+        }
+        
+        .dashboard-dot.green {
+            background-color: var(--primary);
+        }
+        
+        .dashboard-content {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            height: 300px;
+        }
+        
+        .chart-main {
+            background: linear-gradient(to right bottom, var(--secondary), var(--dark-light));
+            border-radius: 8px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 20px;
+        }
+        
+        .chart-bar {
+            width: 40px;
+            background-color: var(--primary);
+            border-radius: 4px 4px 0 0;
+            position: relative;
+        }
+        
+        .chart-bar::after {
+            content: attr(data-value);
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: var(--text);
+        }
+        
+        .chart-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .chart-stat {
+            background-color: var(--dark-light);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        footer {
+            background-color: var(--secondary);
+            padding: 40px 0;
+            text-align: center;
+        }
+        
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .social-links a {
+            color: var(--text);
+            font-size: 1.5rem;
+            transition: color 0.3s;
+        }
+        
+        .social-links a:hover {
+            color: var(--primary);
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            nav ul {
+                gap: 10px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .security-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-content {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .hero h2 {
+                font-size: 2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <h1>SecureLog Analyzer</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#features">Características</a></li>
+                    <li><a href="#tech">Tecnologías</a></li>
+                    <li><a href="#security">Seguridad</a></li>
+                    <li><a href="#metrics">Métricas</a></li>
+                    <li><a href="#demo">Demo</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h2>Dashboard de Análisis de Logs de Seguridad</h2>
+            <p>Una solución full-stack para monitorizar, analizar y visualizar logs de seguridad en tiempo real, diseñada para entornos SOC junior con énfasis en escalabilidad y conformidad con estándares NIST.</p>
+            <a href="SecureLog.html" class="btn">Ver Demo</a>
+            <a href="https://github.com/motaban/securelog-analyzer" class="btn btn-outline">Código en GitHub</a>
+        </div>
+    </section>
+
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Características Principales</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <h3>Interfaz Intuitiva</h3>
+                    <p>Dashboard con tema oscuro (grises y negros) y diseño responsive, adaptado para dispositivos móviles y desktop.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-upload"></i>
+                    </div>
+                    <h3>Ingreso y Visualización</h3>
+                    <p>Procesamiento de logs en 4 pasos: carga, filtrado por tipo de amenaza, análisis automatizado y generación de informes.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-lock"></i>
+                    </div>
+                    <h3>Autenticación MFA</h3>
+                    <p>Autenticación multifactor con validación de entradas para prevenir inyecciones XSS y SQL, incluyendo sanitización de datos.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h3>Almacenamiento Híbrido</h3>
+                    <p>MySQL para datos persistentes y LocalStorage para sesiones temporales, con encriptación AES para logs sensibles.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Visualizaciones Interactivas</h3>
+                    <p>Gráficos de tendencias de amenazas, mapas de calor para eventos sospechosos y alertas en tiempo real vía WebSockets.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-filter"></i>
+                    </div>
+                    <h3>Filtrado Avanzado</h3>
+                    <p>Filtrado por fecha, IP, tipo de amenaza (DDoS, malware) y prioridad, con opciones de exportación a PDF/CSV.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tech" class="tech-stack">
+        <div class="container">
+            <h2 class="section-title">Tecnologías Utilizadas</h2>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fab fa-react"></i>
+                    </div>
+                    <h3>React + TypeScript</h3>
+                    <p>Frontend con componentes dinámicos</p>
+                </div>
+                
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fab fa-node-js"></i>
+                    </div>
+                    <h3>Node.js</h3>
+                    <p>APIs RESTful seguras</p>
+                </div>
+                
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h3>MySQL</h3>
+                    <p>Base de datos relacional</p>
+                </div>
+                
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fab fa-python"></i>
+                    </div>
+                    <h3>Python</h3>
+                    <p>Scripts de análisis de logs</p>
+                </div>
+                
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>OWASP ZAP</h3>
+                    <p>Pruebas de vulnerabilidades</p>
+                </div>
+                
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fas fa-plug"></i>
+                    </div>
+                    <h3>WebSockets</h3>
+                    <p>Actualizaciones en tiempo real</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="security" class="security">
+        <div class="container">
+            <h2 class="section-title">Enfoque en Ciberseguridad</h2>
+            <div class="security-content">
+                <div class="security-image">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <div class="security-details">
+                    <ul class="security-list">
+                        <li><i class="fas fa-check-circle"></i> Validación estricta de entradas y salidas para mitigar riesgos como XSS, CSRF y SQL Injection</li>
+                        <li><i class="fas fa-check-circle"></i> Encriptación AES-256 para datos en reposo y en tránsito (HTTPS)</li>
+                        <li><i class="fas fa-check-circle"></i> Análisis de amenazas automatizado con detección de patrones sospechosos</li>
+                        <li><i class="fas fa-check-circle"></i> Cumplimiento con principios de least privilege y logging detallado para auditorías</li>
+                        <li><i class="fas fa-check-circle"></i> Integración con APIs externas (VirusTotal) con manejo seguro de tokens</li>
+                        <li><i class="fas fa-check-circle"></i> Pruebas de vulnerabilidades con OWASP ZAP en el pipeline de CI/CD</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="metrics" class="metrics">
+        <div class="container">
+            <h2 class="section-title">Resultados y Métricas</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">10,000+</div>
+                    <div class="metric-label">Logs procesados por minuto</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value">95%</div>
+                    <div class="metric-label">Precisión en detección de anomalías</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value">70%</div>
+                    <div class="metric-label">Reducción en tiempo de análisis</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value">85%</div>
+                    <div class="metric-label">Cobertura de pruebas unitarias</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="demo" class="demo">
+        <div class="container">
+            <h2 class="section-title">Demo Interactiva</h2>
+            <div class="demo-content">
+                <p>Explora el dashboard de SecureLog Analyzer con datos de ejemplo. La versión completa incluye todas las funcionalidades descritas.</p>
+                
+                <div class="dashboard-preview">
+                    <div class="dashboard-header">
+                        <div class="dashboard-dot red"></div>
+                        <div class="dashboard-dot yellow"></div>
+                        <div class="dashboard-dot green"></div>
+                    </div>
+                    <div class="dashboard-content">
+                        <div class="chart-main">
+                            <div class="chart-bar" data-value="125" style="height: 70%;"></div>
+                            <div class="chart-bar" data-value="98" style="height: 55%;"></div>
+                            <div class="chart-bar" data-value="156" style="height: 85%;"></div>
+                            <div class="chart-bar" data-value="78" style="height: 45%;"></div>
+                            <div class="chart-bar" data-value="203" style="height: 100%;"></div>
+                            <div class="chart-bar" data-value="134" style="height: 75%;"></div>
+                            <div class="chart-bar" data-value="88" style="height: 50%;"></div>
+                        </div>
+                        <div class="chart-sidebar">
+                            <div class="chart-stat">
+                                <div class="stat-value">42</div>
+                                <div class="stat-label">Alertas hoy</div>
+                            </div>
+                            <div class="chart-stat">
+                                <div class="stat-value">18</div>
+                                <div class="stat-label">Incidentes</div>
+                            </div>
+                            <div class="chart-stat">
+                                <div class="stat-value">96%</div>
+                                <div class="stat-label">Tiempo activo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <p>¿Interesado en probar la versión completa?</p>
+                <a href="https://github.com/motaban/securelog-analyzer" class="btn">Ver Repositorio</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="social-links">
+                <a href="https://github.com/motaban"><i class="fab fa-github"></i></a>
+                <a href="https://linkedin.com/https://www.linkedin.com/in/abdeer"><i class="fab fa-linkedin"></i></a>
+            </div>
+            <p>© 2024 SecureLog Analyzer. Desarrollado como proyecto de portafolio.</p>
+            <p>Conectando conceptos de certificaciones Cisco Cyber Threat Management, Introduction to Cybersecurity y arcX Foundation Level Threat Intelligence Analyst.</p>
+        </div>
+    </footer>
+</body>
+</html>
